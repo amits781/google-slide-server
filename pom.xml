@@ -28,13 +28,6 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
-			<groupId>org.open.cv</groupId>
-			<artifactId>com.face.dec</artifactId>
-			<version>1.0.0</version>
-			<scope>system</scope>
-    		<systemPath>${project.basedir}/src/main/resources/opencv-460.jar</systemPath>
-		</dependency>
-		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>

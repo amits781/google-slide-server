@@ -1,5 +1,6 @@
 package com.aidyn.slideshow.util;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -8,6 +9,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import javax.imageio.ImageIO;
 
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
@@ -40,6 +43,7 @@ public class FileParser {
 	private ObjectMapper objectMapper;
 
 	private File imageDirectory;
+	private BufferedImage bimg;
 
 	private List<String> wideImage = new ArrayList<>();
 	private List<String> portraitImage = new ArrayList<>();
@@ -69,6 +73,32 @@ public class FileParser {
 		portraitImage = images.get("Portrait");
 		log.info("Init Done");
 
+	}
+
+	public void parseImageLite() {
+		imageDirectory = new File(imageBasePath);
+
+		Map<String, List<String>> images = Arrays.asList(imageDirectory.listFiles()).stream()
+				.filter(f -> f.getName().substring(f.getName().lastIndexOf('.') + 1, f.getName().length())
+						.equalsIgnoreCase("jpg"))
+				.collect(Collectors.groupingBy(f -> isWideImage(f) ? "Wide" : "Portrait",
+						Collectors.mapping(File::getName, Collectors.toList())));
+		wideImage = images.get("Wide");
+		portraitImage = images.get("Portrait");
+		log.info("Init Done");
+
+	}
+
+	private Boolean isWideImage(File imageFile) {
+		try {
+			bimg = ImageIO.read(imageFile);
+		} catch (IOException e) {
+			log.error("error in reading image: " + imageFile.getAbsolutePath());
+
+		}
+		int width = bimg.getWidth();
+		int height = bimg.getHeight();
+		return width > height;
 	}
 
 	private Boolean isWideImage(File imageFile, CascadeClassifier faceDetector) {
