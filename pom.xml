@@ -14,7 +14,7 @@
 	<name>slide-show</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
-		<java.version>17</java.version>
+		<java.version>11</java.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -28,10 +28,22 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
+		  <groupId>com.drewnoakes</groupId>
+		  <artifactId>metadata-extractor</artifactId>
+		  <version>2.18.0</version>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- <dependency>
+			<groupId>org.open.cv</groupId>
+			<artifactId>com.face.dec</artifactId>
+			<version>1.0.0</version>
+			<scope>system</scope>
+    		<systemPath>${project.basedir}/src/main/resources/opencv-460.jar</systemPath>
+		</dependency> -->
 	</dependencies>
 
 	<build>

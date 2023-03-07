@@ -26,6 +26,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ResourceUtils;
 
 import com.aidyn.slideshow.dto.GooglePhotoData;
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.imaging.ImageProcessingException;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.MetadataException;
+import com.drew.metadata.exif.ExifIFD0Directory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.Getter;
@@ -77,27 +82,75 @@ public class FileParser {
 
 	public void parseImageLite() {
 		imageDirectory = new File(imageBasePath);
-
-		Map<String, List<String>> images = Arrays.asList(imageDirectory.listFiles()).stream()
-				.filter(f -> f.getName().substring(f.getName().lastIndexOf('.') + 1, f.getName().length())
-						.equalsIgnoreCase("jpg"))
-				.collect(Collectors.groupingBy(f -> isWideImage(f) ? "Wide" : "Portrait",
-						Collectors.mapping(File::getName, Collectors.toList())));
-		wideImage = images.get("Wide");
-		portraitImage = images.get("Portrait");
+		int index = 0;
+		int length = imageDirectory.listFiles().length;
+//		Map<String, List<String>> images = Arrays.asList(imageDirectory.listFiles()).stream()
+//				.filter(f -> f.getName().substring(f.getName().lastIndexOf('.') + 1, f.getName().length())
+//						.equalsIgnoreCase("jpg"))
+//				.collect(Collectors.groupingBy(f -> isWideImage(f) ? "Wide" : "Portrait",
+//						Collectors.mapping(File::getName, Collectors.toList())));
+		for (File f : Arrays.asList(imageDirectory.listFiles())) {
+			log.info("processing file: " + index++ + "/" + length);
+			if (f.getName().substring(f.getName().lastIndexOf('.') + 1, f.getName().length()).equalsIgnoreCase("jpg")) {
+				if (isWideImage(f)) {
+					wideImage.add(f.getName());
+				} else {
+					portraitImage.add(f.getName());
+				}
+			}
+		}
 		log.info("Init Done");
 
 	}
 
 	private Boolean isWideImage(File imageFile) {
+		boolean isInversed = false;
+		int width = 0, height = 0;
 		try {
-			bimg = ImageIO.read(imageFile);
-		} catch (IOException e) {
+			Metadata metadata = ImageMetadataReader.readMetadata(imageFile);
+			ExifIFD0Directory exifIFD0 = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
+			if (exifIFD0 != null) {
+				int orientation = exifIFD0.getInt(ExifIFD0Directory.TAG_ORIENTATION);
+				width = exifIFD0.getInt(ExifIFD0Directory.TAG_IMAGE_WIDTH);
+				height = exifIFD0.getInt(ExifIFD0Directory.TAG_IMAGE_HEIGHT);
+				log.info("processing file: {}", imageFile.getAbsolutePath());
+				log.info("orientation: {}", orientation);
+				switch (orientation) {
+				case 1: // [Exif IFD0] Orientation - Top, left side (Horizontal / normal)
+					break;
+				case 6: // [Exif IFD0] Orientation - Right side, top (Rotate 90 CW)
+					isInversed = true;
+					break;
+				case 3: // [Exif IFD0] Orientation - Bottom, right side (Rotate 180)
+					break;
+				case 8: // [Exif IFD0] Orientation - Left side, bottom (Rotate 270 CW)
+					isInversed = true;
+					break;
+				}
+				if (isInversed) {
+					width = exifIFD0.getInt(ExifIFD0Directory.TAG_IMAGE_HEIGHT);
+					height = exifIFD0.getInt(ExifIFD0Directory.TAG_IMAGE_WIDTH);
+				}
+			} else {
+				bimg = ImageIO.read(imageFile);
+				width = bimg.getWidth();
+				height = bimg.getHeight();
+			}
+		} catch (IOException | ImageProcessingException | MetadataException e) {
 			log.error("error in reading image: " + imageFile.getAbsolutePath());
+			try {
+				bimg = ImageIO.read(imageFile);
+			} catch (IOException e1) {
+				log.error("error in reading bimg image: " + imageFile.getAbsolutePath());
+			}
+			width = bimg.getWidth();
+			height = bimg.getHeight();
 
 		}
-		int width = bimg.getWidth();
-		int height = bimg.getHeight();
+
+		log.info("imageWidth: {}", width);
+		log.info("imageHeight: {}", height);
+		log.info("isWide: {}", width > height);
 		return width > height;
 	}
 
@@ -108,6 +161,8 @@ public class FileParser {
 		int imgHeigth = image.height();
 		int imgWidth = image.width();
 		File jsonFile = new File(imageBasePath + "//" + filename + ".json");
+		log.debug("JSON FIle: {}", jsonFile.getAbsolutePath());
+		log.debug("Image FIle Height: {}", image.height());
 		GooglePhotoData photoData = null;
 		try {
 			photoData = objectMapper.readValue(jsonFile, GooglePhotoData.class);
