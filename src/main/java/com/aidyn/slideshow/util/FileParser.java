@@ -167,7 +167,7 @@ public class FileParser {
 		try {
 			photoData = objectMapper.readValue(jsonFile, GooglePhotoData.class);
 			if (photoData.getIsProcessed()) {
-				return imgWidth > imgHeigth;
+				log.debug("Reprocessing: {}", filename);
 			}
 		} catch (IOException e1) {
 			log.error("error in reading JSON file: " + filename + ".json");
