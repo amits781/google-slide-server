@@ -30,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SlideService {
 
-	@Value("${target.system}")
+	@Value("${target.system:low}")
 	private String targetSystem;
 
 	@Autowired

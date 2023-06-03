@@ -41,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 public class FileParser {
 
-	@Value("${image.path}")
+	@Value("${image.path:C://Users//amits//Documents//Dev Work//google-slide-show//google-slide-show//public//image}")
 	private String imageBasePath;
 
 	@Autowired
@@ -60,7 +60,8 @@ public class FileParser {
 
 		CascadeClassifier faceDetector = new CascadeClassifier();
 		try {
-			File file = ResourceUtils.getFile("classpath:haarcascade_frontalface_alt.xml");
+			File file = ResourceUtils.getFile(
+					"C:\\Users\\amits\\eclipse-workspace\\demo\\src\\main\\resources\\haarcascade_frontalface_alt.xml");
 			log.info("File found: " + file.getAbsolutePath());
 
 			faceDetector.load(file.getAbsolutePath());

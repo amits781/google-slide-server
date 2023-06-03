@@ -37,13 +37,13 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<!-- <dependency>
+		<dependency>
 			<groupId>org.open.cv</groupId>
 			<artifactId>com.face.dec</artifactId>
 			<version>1.0.0</version>
 			<scope>system</scope>
-    		<systemPath>${project.basedir}/src/main/resources/opencv-460.jar</systemPath>
-		</dependency> -->
+    		<systemPath>C:\opencv\opencv\build\java\opencv-470.jar</systemPath>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -60,6 +60,14 @@
 					</excludes>
 				</configuration>
 			</plugin>
+			<plugin>
+			    <groupId>org.apache.maven.plugins</groupId>
+			    <artifactId>maven-surefire-plugin</artifactId>
+			    <configuration>
+			        <argLine>-Djava.library.path=C:\opencv\opencv\build\java\x64</argLine>
+			    </configuration>
+			</plugin>
+
 		</plugins>
 	</build>
 
